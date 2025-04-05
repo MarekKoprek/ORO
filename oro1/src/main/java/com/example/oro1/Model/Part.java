@@ -21,7 +21,7 @@ public class Part {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private Category category;
 
     private List<Model> models;
