@@ -2,14 +2,15 @@ package com.example.oro2;
 
 import com.example.oro2.model.*;
 import com.example.oro2.repo.*;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.annotation.Rollback;
 
 import java.time.LocalDateTime;
 
@@ -33,6 +34,7 @@ class Oro2ApplicationTests {
 	private ClientRepo clientRepo;
 
 	@Test
+	@Transactional
 	void contextLoads() {
 		Room room1 = createRoom(1, 14);
 		Room room2 = createRoom(2, 15);
@@ -58,12 +60,6 @@ class Oro2ApplicationTests {
 		Performance performance7 = createPerformance(room1, art1, date3);
 		Performance performance8 = createPerformance(room2, art2, date3);
 		Performance performance9 = createPerformance(room3, art3, date3);
-
-		try{
-			Performance performanceTest = createPerformance(room1, art2, date1);
-		} catch(ConstraintViolationException e){
-			log.info("Sala zajęta o tej godzinie");
-		}
 
 		Ticket ticket1 = createTicket(LocalDateTime.now().plusMinutes(10), 10, performance1, client1);
 		Ticket ticket2 = createTicket(LocalDateTime.now().plusMinutes(10), 12, performance1, client2);
@@ -101,8 +97,8 @@ class Oro2ApplicationTests {
 		log.info("---------------------------------------------------------------------------------------------------------");
 
 		Page<Performance> art1performances = performanceRepo.findByArtId(art1.getId(), pageable);
-		Page<Performance> art2performances = performanceRepo.findByArtId(art1.getId(), pageable);
-		Page<Performance> art3performances = performanceRepo.findByArtId(art1.getId(), pageable);
+		Page<Performance> art2performances = performanceRepo.findByArtId(art2.getId(), pageable);
+		Page<Performance> art3performances = performanceRepo.findByArtId(art3.getId(), pageable);
 
 		log.info("Lista przedstawień dla id = {}:", art1.getId());
 		art1performances.forEach(performance -> {
@@ -146,7 +142,7 @@ class Oro2ApplicationTests {
 
 		log.info("Lista uczestników przedstawienia o id = {}", performance1.getId());
 		performanceClients.forEach(client -> {
-			log.info("Imie: {} Naziwsko: {}", client.getFirstName(), client.getLastName());
+			log.info("Imie i naziwsko: {} {}", client.getFirstName(), client.getLastName());
 		});
 
 		log.info("---------------------------------------------------------------------------------------------------------");
