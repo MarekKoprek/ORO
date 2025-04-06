@@ -27,7 +27,7 @@ public interface TicketRepo extends JpaRepository<Ticket, Long> {
                                         @Param("endDate") LocalDateTime endDate,
                                         @Param("clientId") Long clientId);
 
-    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.performance.room.id = :roomId" +
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.performance.room.id = :roomId " +
             "AND t.performance.date = :date " +
             "AND (t.type = :pending OR t.type = :accepted)")
     int countOccupiedSeatsByPerformanceId(@Param("roomId") Long performanceId,

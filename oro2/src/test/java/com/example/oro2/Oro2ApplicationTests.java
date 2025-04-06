@@ -7,6 +7,9 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 
@@ -75,14 +78,87 @@ class Oro2ApplicationTests {
 
 		log.info("---------------------------------------------------------------------------------------------------------");
 
+		Pageable pageable = PageRequest.of(0, 10);
+		Page<Performance> room1performances = performanceRepo.findByRoomId(room1.getId(), pageable);
+		Page<Performance> room2performances = performanceRepo.findByRoomId(room2.getId(), pageable);
+		Page<Performance> room3performances = performanceRepo.findByRoomId(room3.getId(), pageable);
+
+		log.info("Lista przedstawień dla sali {}:", room1.getNumber());
+		room1performances.forEach(performance -> {
+			log.info("Sztuka: {}, Data: {}", performance.getArt().getName(), performance.getDate());
+		});
+
+		log.info("Lista przedstawień dla sali {}:", room2.getNumber());
+		room2performances.forEach(performance -> {
+			log.info("Sztuka: {}, Data: {}", performance.getArt().getName(), performance.getDate());
+		});
+
+		log.info("Lista przedstawień dla sali {}:", room3.getNumber());
+		room3performances.forEach(performance -> {
+			log.info("Sztuka: {}, Data: {}", performance.getArt().getName(), performance.getDate());
+		});
+
+		log.info("---------------------------------------------------------------------------------------------------------");
+
+		Page<Performance> art1performances = performanceRepo.findByArtId(art1.getId(), pageable);
+		Page<Performance> art2performances = performanceRepo.findByArtId(art1.getId(), pageable);
+		Page<Performance> art3performances = performanceRepo.findByArtId(art1.getId(), pageable);
+
+		log.info("Lista przedstawień dla id = {}:", art1.getId());
+		art1performances.forEach(performance -> {
+			log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
+		});
+
+		log.info("Lista przedstawień dla id = {}:", art2.getId());
+		art2performances.forEach(performance -> {
+			log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
+		});
+
+		log.info("Lista przedstawień dla id = {}:", art3.getId());
+		art3performances.forEach(performance -> {
+			log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
+		});
+
+		log.info("---------------------------------------------------------------------------------------------------------");
+
+		art1performances = performanceRepo.findByArtName(art1.getName(), pageable);
+		art2performances = performanceRepo.findByArtName(art2.getName(), pageable);
+		art3performances = performanceRepo.findByArtName(art3.getName(), pageable);
+
+		log.info("Lista przedstawień dla {}:", art1.getName());
+		art1performances.forEach(performance -> {
+			log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
+		});
+
+		log.info("Lista przedstawień dla {}:", art2.getName());
+		art2performances.forEach(performance -> {
+			log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
+		});
+
+		log.info("Lista przedstawień dla {}:", art3.getName());
+		art3performances.forEach(performance -> {
+			log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
+		});
+
+		log.info("---------------------------------------------------------------------------------------------------------");
+
+		Page<Client> performanceClients = ticketRepo.findClientsByPerformanceId(performance1.getId(), pageable);
+
+		log.info("Lista uczestników przedstawienia o id = {}", performance1.getId());
+		performanceClients.forEach(client -> {
+			log.info("Imie: {} Naziwsko: {}", client.getFirstName(), client.getLastName());
+		});
 
 		log.info("---------------------------------------------------------------------------------------------------------");
 
 
+
 		log.info("---------------------------------------------------------------------------------------------------------");
 
 
+
 		log.info("---------------------------------------------------------------------------------------------------------");
+
 
 
 		log.info("---------------------------------------------------------------------------------------------------------");
