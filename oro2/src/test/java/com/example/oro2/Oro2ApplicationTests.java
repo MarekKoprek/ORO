@@ -13,6 +13,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.Rollback;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 @Slf4j
 @SpringBootTest
@@ -40,8 +44,8 @@ class Oro2ApplicationTests {
 		Room room2 = createRoom(2, 15);
 		Room room3 = createRoom(3, 20);
 
-		Client client1 = createClient("Jan", "Nowak", "jannowak@gmail.com");
-		Client client2 = createClient("Andrzej", "Kowalski", "andrzejkowalski@wp.pl");
+		Client client1 = createClient("Jan", "Nowak", "jannowak@gmail.com", "jannowak");
+		Client client2 = createClient("Andrzej", "Kowalski", "andrzejkowalski@wp.pl", "andrzejkowalski");
 
 		Art art1 = createArt("Królewna Śnieżka");
 		Art art2 = createArt("Romeo i Julia");
@@ -79,20 +83,16 @@ class Oro2ApplicationTests {
 		Page<Performance> room2performances = performanceRepo.findByRoomId(room2.getId(), pageable);
 		Page<Performance> room3performances = performanceRepo.findByRoomId(room3.getId(), pageable);
 
-		log.info("Lista przedstawień dla sali {}:", room1.getNumber());
-		room1performances.forEach(performance -> {
-			log.info("Sztuka: {}, Data: {}", performance.getArt().getName(), performance.getDate());
-		});
+		BiConsumer<Integer, Page<Performance>> logRoomPerformance = (number, performances) -> {
+			log.info("Lista przedstawień dla sali {}:", number);
+			room1performances.forEach(performance -> {
+				log.info("Sztuka: {}, Data: {}", performance.getArt().getName(), performance.getDate());
+			});
+		};
 
-		log.info("Lista przedstawień dla sali {}:", room2.getNumber());
-		room2performances.forEach(performance -> {
-			log.info("Sztuka: {}, Data: {}", performance.getArt().getName(), performance.getDate());
-		});
-
-		log.info("Lista przedstawień dla sali {}:", room3.getNumber());
-		room3performances.forEach(performance -> {
-			log.info("Sztuka: {}, Data: {}", performance.getArt().getName(), performance.getDate());
-		});
+		logRoomPerformance.accept(room1.getNumber(), room1performances);
+		logRoomPerformance.accept(room2.getNumber(), room2performances);
+		logRoomPerformance.accept(room3.getNumber(), room3performances);
 
 		log.info("---------------------------------------------------------------------------------------------------------");
 
@@ -100,20 +100,16 @@ class Oro2ApplicationTests {
 		Page<Performance> art2performances = performanceRepo.findByArtId(art2.getId(), pageable);
 		Page<Performance> art3performances = performanceRepo.findByArtId(art3.getId(), pageable);
 
-		log.info("Lista przedstawień dla id = {}:", art1.getId());
-		art1performances.forEach(performance -> {
-			log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
-		});
+		BiConsumer<Long, Page<Performance>> logIdPerformance = (id, performances) -> {
+			log.info("Lista przedstawień dla id = {}:", id);
+			performances.forEach(performance -> {
+				log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
+			});
+		};
 
-		log.info("Lista przedstawień dla id = {}:", art2.getId());
-		art2performances.forEach(performance -> {
-			log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
-		});
-
-		log.info("Lista przedstawień dla id = {}:", art3.getId());
-		art3performances.forEach(performance -> {
-			log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
-		});
+		logIdPerformance.accept(art1.getId(), art1performances);
+		logIdPerformance.accept(art2.getId(), art2performances);
+		logIdPerformance.accept(art3.getId(), art3performances);
 
 		log.info("---------------------------------------------------------------------------------------------------------");
 
@@ -121,20 +117,16 @@ class Oro2ApplicationTests {
 		art2performances = performanceRepo.findByArtName(art2.getName(), pageable);
 		art3performances = performanceRepo.findByArtName(art3.getName(), pageable);
 
-		log.info("Lista przedstawień dla {}:", art1.getName());
-		art1performances.forEach(performance -> {
-			log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
-		});
+		BiConsumer<String, Page<Performance>> logNamePerformance = (name, performances) -> {
+			log.info("Lista przedstawień dla {}:", name);
+			performances.forEach(performance -> {
+				log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
+			});
+		};
 
-		log.info("Lista przedstawień dla {}:", art2.getName());
-		art2performances.forEach(performance -> {
-			log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
-		});
-
-		log.info("Lista przedstawień dla {}:", art3.getName());
-		art3performances.forEach(performance -> {
-			log.info("Sala: {}, Data: {}", performance.getRoom().getNumber(), performance.getDate());
-		});
+		logNamePerformance.accept(art1.getName(), art1performances);
+		logNamePerformance.accept(art2.getName(), art2performances);
+		logNamePerformance.accept(art3.getName(), art3performances);
 
 		log.info("---------------------------------------------------------------------------------------------------------");
 
@@ -147,15 +139,65 @@ class Oro2ApplicationTests {
 
 		log.info("---------------------------------------------------------------------------------------------------------");
 
+		Page<Performance> client1Performances = ticketRepo.findPerformancesByClientId(client1.getId(), pageable);
+		Page<Performance> client2Performances = ticketRepo.findPerformancesByClientId(client2.getId(), pageable);
 
+		BiConsumer<Long, Page<Performance>> logClientPerformances = (clientId, performances) -> {
+			log.info("Lista przedstawień klienta id = {}", clientId);
+			performances.forEach(performance ->
+					log.info("Nazwa: {} Data: {}", performance.getArt().getName(), performance.getDate())
+			);
+		};
+
+		logClientPerformances.accept(client1.getId(), client1Performances);
+		logClientPerformances.accept(client2.getId(), client2Performances);
 
 		log.info("---------------------------------------------------------------------------------------------------------");
 
+		client1Performances = ticketRepo.findPerformancesByClientLogin(client1.getLogin(), pageable);
+		client2Performances = ticketRepo.findPerformancesByClientLogin(client2.getLogin(), pageable);
 
+		BiConsumer<String, Page<Performance>> logClientLoginPerformance = (clientLogin, performances) -> {
+			log.info("Lista przedstawień klienta login = {}", clientLogin);
+			performances.forEach(performance ->
+					log.info("Nazwa: {} Data: {}", performance.getArt().getName(), performance.getDate())
+			);
+		};
+
+		logClientLoginPerformance.accept(client1.getLogin(), client1Performances);
+		logClientLoginPerformance.accept(client2.getLogin(), client2Performances);
 
 		log.info("---------------------------------------------------------------------------------------------------------");
 
+		int room1date1OccupiedSeats = ticketRepo.countOccupiedSeatsByRoomNumberDate(room1.getNumber(), date1);
+		int room2date2OccupiedSeats = ticketRepo.countOccupiedSeatsByRoomNumberDate(room2.getNumber(), date2);
 
+		log.info("Liczba zajętych miejsc dla sali {} o godzinie {}: {}", room1.getNumber(), date1, room1date1OccupiedSeats);
+		log.info("Liczba zajętych miejsc dla sali {} o godzinie {}: {}", room2.getNumber(), date2, room2date2OccupiedSeats);
+
+		log.info("---------------------------------------------------------------------------------------------------------");
+
+		int art1Rooms = performanceRepo.countRoomsByArtId(art1.getId());
+		int art2Rooms = performanceRepo.countRoomsByArtId(art2.getId());
+		int art3Rooms = performanceRepo.countRoomsByArtId(art3.getId());
+
+		log.info("Liczba sal w których wystawiono sztukę o id = {}: {}", art1.getId(), art1Rooms);
+		log.info("Liczba sal w których wystawiono sztukę o id = {}: {}", art2.getId(), art2Rooms);
+		log.info("Liczba sal w których wystawiono sztukę o id = {}: {}", art3.getId(), art3Rooms);
+
+		log.info("---------------------------------------------------------------------------------------------------------");
+
+		ticket1.setType(ReservationType.ACCEPTED);
+		ticket3.setType(ReservationType.ACCEPTED);
+		ticket4.setType(ReservationType.ACCEPTED);
+		ticket7.setType(ReservationType.ACCEPTED);
+		ticket8.setType(ReservationType.ACCEPTED);
+
+		int client1Date1Tickets = ticketRepo.countTicketsByClientDateBetween(date1, date3, client1.getId());
+		int client2Date1Tickets = ticketRepo.countTicketsByClientDateBetween(date1, date3, client2.getId());
+
+		log.info("Liczba kupionych biletów w przedziale czasowym ({} - {}) klienta o id = {}: {}", date1, date3, client1.getId(), client1Date1Tickets);
+		log.info("Liczba kupionych biletów w przedziale czasowym ({} - {}) klienta o id = {}: {}", date1, date3, client2.getId(), client2Date1Tickets);
 
 		log.info("---------------------------------------------------------------------------------------------------------");
 	}
@@ -168,8 +210,8 @@ class Oro2ApplicationTests {
 		return artRepo.save(new Art(null, name));
 	}
 
-	private Client createClient(String firstName, String lastName, String email){
-		return clientRepo.save(new Client(null, firstName, lastName, email, null, null));
+	private Client createClient(String firstName, String lastName, String email, String login){
+		return clientRepo.save(new Client(null, firstName, lastName, email, login, null));
 	}
 
 	private Performance createPerformance(Room room, Art art, LocalDateTime date){

@@ -22,16 +22,25 @@ public interface TicketRepo extends JpaRepository<Ticket, Long> {
     @Query("SELECT t.performance FROM Ticket t WHERE t.client.login = :clientLogin")
     Page<Performance> findPerformancesByClientLogin(@Param("clientLogin") String clientLogin, Pageable pageable);
 
-    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.performance.date BETWEEN :startDate AND :endDate AND t.client.id = :clientId")
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.performance.date BETWEEN :startDate AND :endDate AND t.client.id = :clientId AND t.type = :accepted")
     int countTicketsByClientDateBetween(@Param("startDate") LocalDateTime startDate,
                                         @Param("endDate") LocalDateTime endDate,
-                                        @Param("clientId") Long clientId);
+                                        @Param("clientId") Long clientId,
+                                        @Param("accepted") ReservationType accepted);
 
-    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.performance.room.id = :roomId " +
+    default int countTicketsByClientDateBetween(LocalDateTime startDate, LocalDateTime endDate, Long clientId) {
+        return countTicketsByClientDateBetween(startDate, endDate, clientId, ReservationType.ACCEPTED);
+    }
+
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.performance.room.number = :roomNumber " +
             "AND t.performance.date = :date " +
             "AND (t.type = :pending OR t.type = :accepted)")
-    int countOccupiedSeatsByPerformanceId(@Param("roomId") Long performanceId,
-                                          @Param("date") LocalDateTime date,
-                                          @Param("pending") ReservationType pending,
-                                          @Param("accepted") ReservationType accepted);
+    int countOccupiedSeatsByRoomNumberDate(@Param("roomNumber") int roomNumber,
+                                           @Param("date") LocalDateTime date,
+                                           @Param("pending") ReservationType pending,
+                                           @Param("accepted") ReservationType accepted);
+
+    default int countOccupiedSeatsByRoomNumberDate(int roomNumber, LocalDateTime date) {
+        return countOccupiedSeatsByRoomNumberDate(roomNumber, date, ReservationType.PENDING, ReservationType.ACCEPTED);
+    }
 }
